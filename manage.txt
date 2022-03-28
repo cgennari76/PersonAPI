@@ -1,0 +1,4 @@
+chris@PC00076:~/.ssh$ sudo ssh -i "wsl2" ec2-user@50.18.147.166
+sudo su
+sudo su postgres
+psql
