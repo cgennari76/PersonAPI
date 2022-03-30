@@ -3,7 +3,7 @@ from config import db, ma
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from marshmallow import fields
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
 from marshmallow_sqlalchemy.fields import Nested
 
 
@@ -13,7 +13,7 @@ class Person(db.Model):
     lname = db.Column(db.String(32), index=True)
     fname = db.Column(db.String(32))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    notes = relationship("Note", backref='person', lazy='joined', primaryjoin="(Person.person_id == Note.person_id)")
+    notes = relationship("Note", back_populates='person')
 
 
 class Note(db.Model):
@@ -24,13 +24,17 @@ class Note(db.Model):
     timestamp = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+    person = relationship("Person", back_populates='notes')
+
 
 class PersonSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Person
 
-    notes = Nested("NoteSchema", many=True)
+    notes = Nested(lambda: NoteSchema())
 
 class NoteSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Note
+
+    person = Nested(lambda: PersonSchema())
